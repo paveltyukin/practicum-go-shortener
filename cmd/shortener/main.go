@@ -28,7 +28,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	l[shortLink] = link
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusMultiStatus)
+	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(shortLink))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

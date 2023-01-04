@@ -1,10 +1,11 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"io"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -13,7 +14,8 @@ type Links map[string]string
 var l = make(Links)
 
 func generateShortLink(link string) string {
-	return link
+	hash := md5.Sum([]byte(link))
+	return hex.EncodeToString(hash[:])
 }
 
 // PostHandler /
@@ -38,8 +40,6 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 // GetHandler /{string id}
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	shortLink := r.URL.Path[1:]
-	shortLink = strings.Replace(shortLink, "http:/", "http://", -1)
-	shortLink = strings.Replace(shortLink, "https:/", "https://", -1)
 	link, ok := l[shortLink]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)

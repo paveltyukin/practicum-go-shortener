@@ -30,7 +30,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(shortLink))
+	_, err = w.Write([]byte("http://localhost:8080/" + shortLink))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}

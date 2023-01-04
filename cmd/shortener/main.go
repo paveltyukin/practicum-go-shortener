@@ -19,6 +19,10 @@ func generateShortLink(link string) string {
 // PostHandler /
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	rawLink, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 	link := string(rawLink)
 	shortLink := generateShortLink(link)
 	l[shortLink] = link
@@ -55,8 +59,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
-	return
 }
 
 func main() {

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -14,8 +13,8 @@ type Links map[string]string
 var l = make(Links)
 
 func generateShortLink(link string) string {
-	hash := md5.Sum([]byte(link))
-	return hex.EncodeToString(hash[:])
+	linkLength := len(link)
+	return strconv.Itoa(linkLength)
 }
 
 // PostHandler /

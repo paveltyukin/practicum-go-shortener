@@ -23,6 +23,7 @@ vendor/
 .vscode
 
 # tests
+run_test.sh
 statictest
 shortenertest
 shortenerstress

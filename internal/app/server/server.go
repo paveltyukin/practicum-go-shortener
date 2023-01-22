@@ -1,5 +1,8 @@
 package server
 
+//go:generate mockery --name=storage --inpackage --testonly
+//go:generate mockery --name=shortener --inpackage --testonly
+
 import (
 	"io"
 	"net/http"

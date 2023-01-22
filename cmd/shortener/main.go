@@ -11,7 +11,7 @@ import (
 func main() {
 	s := shortener.New()
 	st := storage.New()
-	err := server.Serve("127.0.0.1:8081", s, st)
+	err := server.Serve("127.0.0.1:8080", s, st)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,9 +2,19 @@ package shortener
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestShortener_Short(t *testing.T) {
+func TestNew(t *testing.T) {
+	t.Run("simple create", func(t *testing.T) {
+		s := &shortener{logger: nil}
+		newS := New(nil)
+		assert.Equal(t, s, newS)
+	})
+}
+
+func Test_shortener_Short(t *testing.T) {
 	type args struct {
 		link string
 	}
@@ -34,9 +44,10 @@ func TestShortener_Short(t *testing.T) {
 			want: "14",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Shortener{}
+			s := &shortener{}
 			if got := s.Short(tt.args.link); got != tt.want {
 				t.Errorf("Short() = %v, want %v", got, tt.want)
 			}

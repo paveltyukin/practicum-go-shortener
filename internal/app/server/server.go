@@ -5,14 +5,12 @@ package server
 //go:generate mockery --name=handlerShortener --testonly --inpackage
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/paveltyukin/practicum-go-shortener/internal/app/shortener"
 	"github.com/paveltyukin/practicum-go-shortener/internal/app/storage"
-	"github.com/paveltyukin/practicum-go-shortener/internal/config"
 )
 
 var _ Handler = &handler{}
@@ -80,9 +78,9 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Serve(cfg *config.Config, s shortener.Shortener, st storage.Storage) error {
+func Serve(s shortener.Shortener, st storage.Storage) error {
 	server := &http.Server{
-		Addr:           fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Addr:           "127.0.0.1:8080",
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,

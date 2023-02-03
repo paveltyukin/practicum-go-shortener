@@ -20,7 +20,7 @@ func InitConfig(logger *logger.Logger) *Config {
 	once.Do(func() {
 		logger.Info("read application configuration")
 		instance = &Config{}
-		err := godotenv.Load(".env.local")
+		err := godotenv.Load(".env")
 		if err != nil {
 			logger.Info("failed to load env from godotenv")
 			logger.Fatal(err)

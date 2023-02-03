@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -32,20 +33,22 @@ func InitLogger() *Logger {
 		FullTimestamp: true,
 	}
 
-	//err := os.MkdirAll("logs", 0777)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//allFile, err := os.OpenFile("logs/all.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640)
-	//if err != nil {
-	//	panic(err)
-	//}
+	err := os.MkdirAll("logs", 0777)
+	if err != nil {
+		l.Fatal(err)
+	}
+
+	now := time.Now()
+	fileName := fmt.Sprintf("logs/%d-%d-%d-all.log", now.Year(), now.Month(), now.Day())
+	allFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640)
+	if err != nil {
+		l.Fatal(err)
+	}
 
 	l.SetOutput(io.Discard)
 
 	l.AddHook(&writerHook{
-		Writer:    []io.Writer{os.Stdout},
+		Writer:    []io.Writer{allFile, os.Stdout},
 		LogLevels: logrus.AllLevels,
 	})
 

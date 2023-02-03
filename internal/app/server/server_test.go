@@ -10,16 +10,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_handler_ServeHTTP(t *testing.T) {
+func TestServe(t *testing.T) {
 	tests := []struct {
 		name           string
-		setupStorage   func(mock *mockStorage)
-		setupShortener func(mock *mockShortener)
+		setupStorage   func(mock *mockHandlerStorage)
+		setupShortener func(mock *mockHandlerShortener)
 		assertResponse func(*testing.T, *httptest.ResponseRecorder)
 	}{
 		{
 			name: "simple positive test",
-			setupStorage: func(mock *mockStorage) {
+			setupStorage: func(mock *mockHandlerStorage) {
 				mock.
 					On("Get", "100").
 					Return("123", true).
@@ -29,7 +29,7 @@ func Test_handler_ServeHTTP(t *testing.T) {
 					Return("123", true).
 					Maybe()
 			},
-			setupShortener: func(mock *mockShortener) {
+			setupShortener: func(mock *mockHandlerShortener) {
 				mock.
 					On("Short", "/counter/Counter/100").
 					Return("123", true).
@@ -46,12 +46,12 @@ func Test_handler_ServeHTTP(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			strg := newMockStorage(t)
+			strg := newMockHandlerStorage(t)
 			if tt.setupStorage != nil {
 				tt.setupStorage(strg)
 			}
 
-			shrtnr := newMockShortener(t)
+			shrtnr := newMockHandlerShortener(t)
 			if tt.setupShortener != nil {
 				tt.setupShortener(shrtnr)
 			}
@@ -63,24 +63,22 @@ func Test_handler_ServeHTTP(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/counter/Counter/100", strings.NewReader("/counter/Counter/100"))
-			h.postHandler(w, r)
+			h.ServeHTTP(w, r)
 			tt.assertResponse(t, w)
 		})
 	}
 }
 
-func Test_handler_getHandler(t *testing.T) {
+func Test_handler_ServeHTTP(t *testing.T) {
 	tests := []struct {
 		name           string
-		setupStorage   func(mock *mockStorage)
+		setupStorage   func(mock *mockHandlerStorage)
 		assertResponse func(*testing.T, *httptest.ResponseRecorder)
 	}{
 		{
 			name: "simple positive test",
-			setupStorage: func(mock *mockStorage) {
-				mock.
-					On("Get", "100").
-					Return("123", true)
+			setupStorage: func(mock *mockHandlerStorage) {
+				mock.On("Get", "100").Return("123", true)
 			},
 			assertResponse: func(t *testing.T, response *httptest.ResponseRecorder) {
 				assert.Equal(t, "123", response.Header().Get("Location"))
@@ -89,7 +87,7 @@ func Test_handler_getHandler(t *testing.T) {
 		},
 		{
 			name: "simple negative test",
-			setupStorage: func(mock *mockStorage) {
+			setupStorage: func(mock *mockHandlerStorage) {
 				mock.On("Get", "100").Return("", false)
 			},
 			assertResponse: func(t *testing.T, response *httptest.ResponseRecorder) {
@@ -101,7 +99,56 @@ func Test_handler_getHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			strg := newMockStorage(t)
+			strg := newMockHandlerStorage(t)
+			if tt.setupStorage != nil {
+				tt.setupStorage(strg)
+			}
+
+			h := handler{
+				storage: strg,
+			}
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/100", nil)
+			h.getHandler(w, r)
+			tt.assertResponse(t, w)
+		})
+	}
+}
+
+func Test_handler_getHandler(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupStorage   func(mock *mockHandlerStorage)
+		assertResponse func(*testing.T, *httptest.ResponseRecorder)
+	}{
+		{
+			name: "simple positive test",
+			setupStorage: func(mock *mockHandlerStorage) {
+				mock.
+					On("Get", "100").
+					Return("123", true)
+			},
+			assertResponse: func(t *testing.T, response *httptest.ResponseRecorder) {
+				assert.Equal(t, "123", response.Header().Get("Location"))
+				assert.Equal(t, http.StatusTemporaryRedirect, response.Code)
+			},
+		},
+		{
+			name: "simple negative test",
+			setupStorage: func(mock *mockHandlerStorage) {
+				mock.On("Get", "100").Return("", false)
+			},
+			assertResponse: func(t *testing.T, response *httptest.ResponseRecorder) {
+				assert.Equal(t, "", response.Header().Get("Location"))
+				assert.Equal(t, http.StatusNotFound, response.Code)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			strg := newMockHandlerStorage(t)
 			if tt.setupStorage != nil {
 				tt.setupStorage(strg)
 			}
@@ -121,18 +168,18 @@ func Test_handler_getHandler(t *testing.T) {
 func Test_handler_postHandler(t *testing.T) {
 	tests := []struct {
 		name           string
-		setupStorage   func(mock *mockStorage)
-		setupShortener func(mock *mockShortener)
+		setupStorage   func(mock *mockHandlerStorage)
+		setupShortener func(mock *mockHandlerShortener)
 		assertResponse func(*testing.T, *httptest.ResponseRecorder)
 	}{
 		{
 			name: "simple positive test",
-			setupStorage: func(mock *mockStorage) {
+			setupStorage: func(mock *mockHandlerStorage) {
 				mock.
 					On("Set", "123", "/counter/Counter/100").
 					Return("123", true)
 			},
-			setupShortener: func(mock *mockShortener) {
+			setupShortener: func(mock *mockHandlerShortener) {
 				mock.
 					On("Short", "/counter/Counter/100").
 					Return("123", true)
@@ -148,12 +195,12 @@ func Test_handler_postHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			strg := newMockStorage(t)
+			strg := newMockHandlerStorage(t)
 			if tt.setupStorage != nil {
 				tt.setupStorage(strg)
 			}
 
-			shrtnr := newMockShortener(t)
+			shrtnr := newMockHandlerShortener(t)
 			if tt.setupShortener != nil {
 				tt.setupShortener(shrtnr)
 			}

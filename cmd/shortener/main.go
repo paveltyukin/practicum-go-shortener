@@ -6,12 +6,16 @@ import (
 	"github.com/paveltyukin/practicum-go-shortener/internal/app/server"
 	"github.com/paveltyukin/practicum-go-shortener/internal/app/shortener"
 	"github.com/paveltyukin/practicum-go-shortener/internal/app/storage"
+	"github.com/paveltyukin/practicum-go-shortener/internal/config"
+	"github.com/paveltyukin/practicum-go-shortener/pkg/logger"
 )
 
 func main() {
-	s := shortener.New()
-	st := storage.New()
-	err := server.Serve("127.0.0.1:8080", s, st)
+	l := logger.InitLogger()
+	cfg := config.InitConfig(l)
+	s := shortener.New(l)
+	st := storage.New(l)
+	err := server.Serve(cfg, s, st)
 	if err != nil {
 		log.Fatal(err)
 	}

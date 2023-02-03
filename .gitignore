@@ -27,3 +27,6 @@ run_test.sh
 statictest
 shortenertest
 shortenerstress
+logs
+.env.local
+testcover/

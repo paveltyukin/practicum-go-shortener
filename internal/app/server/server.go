@@ -1,26 +1,40 @@
 package server
 
-//go:generate mockery --name=storage --inpackage --testonly
-//go:generate mockery --name=shortener --inpackage --testonly
+//go:generate mockery --name=Handler --testonly --inpackage
+//go:generate mockery --name=handlerStorage --testonly --inpackage
+//go:generate mockery --name=handlerShortener --testonly --inpackage
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/paveltyukin/practicum-go-shortener/internal/app/shortener"
+	"github.com/paveltyukin/practicum-go-shortener/internal/app/storage"
+	"github.com/paveltyukin/practicum-go-shortener/internal/config"
 )
 
-type handler struct {
-	storage   storage
-	shortener shortener
+var _ Handler = &handler{}
+
+type Handler interface {
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
+	getHandler(w http.ResponseWriter, r *http.Request)
+	postHandler(w http.ResponseWriter, r *http.Request)
 }
 
-type storage interface {
+type handlerStorage interface {
 	Get(key string) (string, bool)
 	Set(key, value string)
 }
 
-type shortener interface {
+type handlerShortener interface {
 	Short(link string) string
+}
+
+type handler struct {
+	storage   handlerStorage
+	shortener handlerShortener
 }
 
 // postHandler /
@@ -66,9 +80,9 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Serve(addr string, s shortener, st storage) error {
+func Serve(cfg *config.Config, s shortener.Shortener, st storage.Storage) error {
 	server := &http.Server{
-		Addr:           addr,
+		Addr:           fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
